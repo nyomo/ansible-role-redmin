@@ -1,0 +1,16 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  vars:
+    mysql_root_password: "hoge!Foo1"
+    redmine_db_password: "Foo!bar999"
+    tenants:
+    - name: redmine1
+      hostname: hoge.test.com
+    - name: redmine2
+      hostname: fuga.test.com
+  tasks:
+    - name: "Include redmine"
+      include_role:
+        name: nyomo.redmine

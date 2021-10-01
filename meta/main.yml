@@ -1,0 +1,16 @@
+galaxy_info:
+  role_name: redmine
+  author: nyomo
+  description: install redmine on CentOS7
+  license: Apache-2.0
+  min_ansible_version: 2.1
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  galaxy_tags:
+  - web
+dependencies:
+  - nyomo.mysql57
+  - nyomo.rbenv
+  - nyomo.apache_passenger

@@ -1,0 +1,4 @@
+---
+# defaults file for ansible-role-redmine
+redmine_src_file: "redmine-4.2.2.tar.gz"
+redmine_src_file_checksum: "e6fbe9279939a95953d377ef76f180f204a1f3da5229a1d56055d658de7198f6"

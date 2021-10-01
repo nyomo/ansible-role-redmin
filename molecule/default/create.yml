@@ -1,0 +1,10 @@
+---
+- name: Create
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  no_log: "{{ molecule_no_log }}"
+  tasks:
+    - name: start docker
+      command: docker run -d -p "{{ molecule_yml.vars[0].docker_httpd_external_port }}":80 --name="{{ molecule_yml.platforms[0].name }}" --hostname="{{ molecule_yml.platforms[0].name }}" -it "{{ molecule_yml.platforms[0].image }}"
+      changed_when: false

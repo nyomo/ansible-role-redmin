@@ -1,0 +1,101 @@
+---
+# tasks file for ansible-role-redmine
+#
+- name: check running on docker?
+  shell: set -o pipefail | ls -l /.dockerenv | wc -l
+  register: is_docker
+  changed_when: false
+- name: gem install bundler
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  gem:
+    name: bundler
+    state: present
+    user_install: false
+- name: yum install
+  become: yes
+  yum: 
+    name: mysql-community-devel
+    state: present
+- name: Redmine src check stat
+  stat:
+    path: /tmp/{{ redmine_src_file }}
+    get_checksum: true
+    checksum_algorithm: sha256
+  register: src_stat
+- name: Download Redmine src
+  get_url:
+    url: https://redmine.org/releases/{{ redmine_src_file }}
+    dest: /tmp
+    checksum: "sha256:{{ redmine_src_file_checksum }}"
+  when:  not src_stat.stat.exists or src_stat.stat.checksum != redmine_src_file_checksum
+- name: httpd setting
+  template:
+    src: httpd.redmine.conf
+    dest: /etc/httpd/conf.d/{{ item.name }}.conf
+    owner: apache
+    group: apache
+    mode: 644
+  with_items: "{{ tenants }}"
+  notify:
+    - Restart apache docker
+    - Restart apache systemd
+- name: Create Database
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  mysql_db:
+    login_user: root
+    name: "{{ item.name }}"
+    encoding: 'utf8'
+    state: present
+  with_items: "{{ tenants }}"
+- name: Create Database User
+  mysql_user:
+    login_user: root
+    name: redmine
+    password: "{{ redmine_db_password }}"
+    priv: "*.*:ALL,GRANT"
+    state: present
+- name: make redmine dir
+  file:
+    path: /var/lib/{{ item.name }}
+    state: directory
+  with_items: "{{ tenants }}"
+- name: unarchive redmine.tar.gz
+  become: yes
+  shell: cd /var/lib/{{ item.name }};gtar xv --strip-components=1 -f /tmp/{{ redmine_src_file }}
+  changed_when: false
+  with_items: "{{ tenants }}"
+- name: set database.yml
+  template:
+    src: database.yml
+    dest: "/var/lib/{{ item.name }}/config"
+  with_items: "{{ tenants }}"
+- name: bundle install
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  shell: |
+    bundle config --local build.mysql2 '--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include' chdir=/var/lib/{{ item.name }}
+    cd /var/lib/{{ item.name }};bundle install --system
+  with_items: "{{ tenants }}"
+  environment: 
+    RAILS_ENV: production
+- name: generate secret token
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  command: "bundle exec rake generate_secret_token chdir=/var/lib/{{ item.name }}"
+  with_items: "{{ tenants }}"
+  environment: 
+    RAILS_ENV: production
+- name: DB migration
+  become: yes
+  become_method: sudo
+  become_flags: '-i'
+  shell: "bundle exec rake db:migrate chdir=/var/lib/{{ item.name }}"
+  with_items: "{{ tenants }}"
+  environment: 
+    RAILS_ENV: production
