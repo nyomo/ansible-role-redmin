@@ -84,8 +84,9 @@
   become_method: sudo
   become_flags: '-i'
   shell: |
-    bundle config --local build.mysql2 '--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include' chdir=/var/lib/{{ item.name }}
-    cd /var/lib/{{ item.name }};bundle install --system
+    bundle config build.mysql2 '--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include' chdir=/var/lib/{{ item.name }}
+    bundle config set system 'true'
+    cd /var/lib/{{ item.name }};bundle install
   with_items: "{{ tenants }}"
   environment: 
     RAILS_ENV: production
