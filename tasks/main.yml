@@ -90,6 +90,8 @@
   with_items: "{{ tenants }}"
   environment: 
     RAILS_ENV: production
+  register: result
+  changed_when: "'Installing ' in result.stdout"
 - name: generate secret token
   become: yes
   become_method: sudo
@@ -98,6 +100,7 @@
   with_items: "{{ tenants }}"
   environment: 
     RAILS_ENV: production
+  changed_when: false
 - name: DB migration
   become: yes
   become_method: sudo
@@ -106,3 +109,7 @@
   with_items: "{{ tenants }}"
   environment: 
     RAILS_ENV: production
+  changed_when: false
+  register: result
+  changed_when: result.stdout is true
+- debug: var=result.results[0]
