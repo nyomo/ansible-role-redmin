@@ -36,7 +36,7 @@
     dest: /etc/httpd/conf.d/{{ item.name }}.conf
     owner: apache
     group: apache
-    mode: 644
+    mode: 0644
   with_items: "{{ tenants }}"
   notify:
     - Restart apache docker
@@ -62,16 +62,22 @@
   file:
     path: /var/lib/{{ item.name }}
     state: directory
+    owner: apache
+    group: apache
+    mode: 0755
   with_items: "{{ tenants }}"
 - name: unarchive redmine.tar.gz
   become: yes
-  shell: cd /var/lib/{{ item.name }};gtar xv --strip-components=1 -f /tmp/{{ redmine_src_file }}
+  shell: cd /var/lib/{{ item.name }};gtar xv --strip-components=1 --owner=apache --group=apache -f /tmp/{{ redmine_src_file }}
   changed_when: false
   with_items: "{{ tenants }}"
 - name: set database.yml
   template:
     src: database.yml
     dest: "/var/lib/{{ item.name }}/config"
+    owner: apache
+    group: apache
+    mode: 0644
   with_items: "{{ tenants }}"
 - name: bundle install
   become: yes
