@@ -68,7 +68,7 @@
   with_items: "{{ tenants }}"
 - name: unarchive redmine.tar.gz
   become: yes
-  shell: cd /var/lib/{{ item.name }};gtar xv --strip-components=1 --owner=apache --group=apache -f /tmp/{{ redmine_src_file }}
+  shell: cd /var/lib/{{ item.name }};gtar xv --strip-components=1 -f /tmp/{{ redmine_src_file }};chown -R apache:apache .
   changed_when: false
   with_items: "{{ tenants }}"
 - name: set database.yml
