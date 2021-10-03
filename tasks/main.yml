@@ -31,6 +31,7 @@
     checksum: "sha256:{{ redmine_src_file_checksum }}"
   when:  not src_stat.stat.exists or src_stat.stat.checksum != redmine_src_file_checksum
 - name: httpd setting
+  become: yes
   template:
     src: httpd.redmine.conf
     dest: /etc/httpd/conf.d/{{ item.name }}.conf
@@ -52,6 +53,7 @@
     state: present
   with_items: "{{ tenants }}"
 - name: Create Database User
+  become: yes
   mysql_user:
     login_user: root
     name: redmine
@@ -59,6 +61,7 @@
     priv: "*.*:ALL,GRANT"
     state: present
 - name: make redmine dir
+  become: yes
   file:
     path: /var/lib/{{ item.name }}
     state: directory
@@ -72,6 +75,7 @@
   changed_when: false
   with_items: "{{ tenants }}"
 - name: set database.yml
+  become: yes
   template:
     src: database.yml
     dest: "/var/lib/{{ item.name }}/config"
