@@ -2,5 +2,7 @@
   src: https://github.com/nyomo/ansible-role-mysql57.git
 - name: nyomo.rbenv
   src: https://github.com/nyomo/ansible-role-rbenv.git
-- name: nyomo.apache_passsenger
+- name: nyomo.apache_passenger
   src: https://github.com/nyomo/ansible-role-apache_passenger.git
+- name: nyomo.redmine
+  src: https://github.com/nyomo/ansible-role-redmine.git
